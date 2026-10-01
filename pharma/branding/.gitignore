@@ -1,0 +1,6 @@
+# Le .gitignore racine de RustDesk exclut *png et *svg : on réautorise les visuels Pharma-Outils.
+!*.png
+!*.bmp
+!*.ico
+!*.svg
+!*.icns
