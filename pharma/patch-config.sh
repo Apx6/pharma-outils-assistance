@@ -22,7 +22,7 @@ sed -i.bak \
   -e "s|^pub const RS_PUB_KEY: &str = \".*\";|pub const RS_PUB_KEY: \&str = \"${KEY}\";|" \
   -e "s|\(pub static ref APP_NAME: RwLock<String> = RwLock::new(\)\"RustDesk\"|\1\"${NAME}\"|" \
   -e "s|\(pub static ref PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new(\)\"[^\"]*\"|\1\"${SERVER}\"|" \
-  -e 's|^\(    pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = \)Default::default();|\1RwLock::new(HashMap::from([("hide-server-settings".to_owned(), "Y".to_owned())]));|' \
+  -e 's|^\(    pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = \)Default::default();|\1RwLock::new(HashMap::from([("hide-server-settings".to_owned(), "Y".to_owned()), ("register-device".to_owned(), "N".to_owned())]));|' \
   -e 's|^\(    pub static ref HARD_SETTINGS: RwLock<HashMap<String, String>> = \)Default::default();|\1RwLock::new(HashMap::from([("disable-account".to_owned(), "Y".to_owned())]));|' \
   "$CFG"
 rm -f "$CFG.bak"
@@ -34,8 +34,10 @@ grep -q "APP_NAME: RwLock<String> = RwLock::new(\"${NAME}\"" "$CFG"    || { echo
 # Serveur « maison » compilé : sans lui, RustDesk se croit sur le serveur public (message
 # « mettez en place votre propre serveur », qualité/FPS bridés en relais : client.rs, dialog.dart)
 grep -q "PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new(\"${SERVER}\"" "$CFG" || { echo "ÉCHEC : PROD_RENDEZVOUS_SERVER non modifié" >&2; exit 1; }
-# Réglages intégrés : masque l'écran « Serveur ID/relais » (personne ne peut changer de serveur)
-grep -q 'BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = RwLock::new(HashMap::from(\[("hide-server-settings"' "$CFG" || { echo "ÉCHEC : BUILTIN_SETTINGS non modifié" >&2; exit 1; }
+# Réglages intégrés : masque l'écran « Serveur ID/relais » (personne ne peut changer de serveur) ;
+# register-device=N vide l'adresse d'API (Config::no_register_device) : plus d'envoi de
+# /api/sysinfo, /api/heartbeat ni du journal des connexions vers un serveur d'API inexistant.
+grep -q 'BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = RwLock::new(HashMap::from(\[("hide-server-settings".*("register-device".to_owned(), "N"' "$CFG" || { echo "ÉCHEC : BUILTIN_SETTINGS non modifié" >&2; exit 1; }
 # Pas de serveur d'API (compte, carnet d'adresses) : on masque compte, carnet d'adresses et
 # « Appareils accessibles » (peer_tab_model.dart, desktop_setting_page.dart). Les Favoris restent.
 grep -q 'HARD_SETTINGS: RwLock<HashMap<String, String>> = RwLock::new(HashMap::from(\[("disable-account"' "$CFG" || { echo "ÉCHEC : HARD_SETTINGS non modifié" >&2; exit 1; }
