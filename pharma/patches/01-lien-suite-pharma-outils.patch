@@ -1,0 +1,49 @@
+diff --git a/flutter/lib/desktop/pages/desktop_home_page.dart b/flutter/lib/desktop/pages/desktop_home_page.dart
+index 42ec1003..08d1d790 100644
+--- a/flutter/lib/desktop/pages/desktop_home_page.dart
++++ b/flutter/lib/desktop/pages/desktop_home_page.dart
+@@ -112,6 +112,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
+         },
+       ),
+       buildPluginEntry(),
++      buildPharmaOutilsLink(),
+     ];
+     if (isIncomingOnly) {
+       children.addAll([
+@@ -180,6 +181,36 @@ class _DesktopHomePageState extends State<DesktopHomePage>
+     );
+   }
+ 
++  // Pharma-outils : lien vers la suite d'outils (pharma/patches/01-lien-suite-pharma-outils.patch)
++  Widget buildPharmaOutilsLink() {
++    const vert = Color(0xFF10B981);
++    return InkWell(
++      onTap: () => launchUrl(Uri.parse('https://pharma-outils.fr'),
++          mode: LaunchMode.externalApplication),
++      borderRadius: BorderRadius.circular(8),
++      child: Container(
++        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++        decoration: BoxDecoration(
++          borderRadius: BorderRadius.circular(8),
++          border: Border.all(color: vert.withOpacity(0.5)),
++        ),
++        child: Row(
++          children: [
++            const Icon(Icons.apps_rounded, size: 18, color: vert),
++            const SizedBox(width: 8),
++            const Expanded(
++              child: Text(
++                'Suite pharma-outils',
++                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
++              ),
++            ),
++            Icon(Icons.open_in_new, size: 14, color: Colors.grey.withOpacity(0.8)),
++          ],
++        ),
++      ),
++    ).marginOnly(left: 12, right: 12, top: 12, bottom: 12);
++  }
++
+   buildRightPane(BuildContext context) {
+     return Container(
+       color: Theme.of(context).scaffoldBackgroundColor,

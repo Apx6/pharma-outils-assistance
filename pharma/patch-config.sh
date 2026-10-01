@@ -22,6 +22,7 @@ sed -i.bak \
   -e "s|^pub const RS_PUB_KEY: &str = \".*\";|pub const RS_PUB_KEY: \&str = \"${KEY}\";|" \
   -e "s|\(pub static ref APP_NAME: RwLock<String> = RwLock::new(\)\"RustDesk\"|\1\"${NAME}\"|" \
   -e "s|\(pub static ref PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new(\)\"[^\"]*\"|\1\"${SERVER}\"|" \
+  -e 's|^\(    pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = \)Default::default();|\1RwLock::new(HashMap::from([("hide-server-settings".to_owned(), "Y".to_owned())]));|' \
   "$CFG"
 rm -f "$CFG.bak"
 
@@ -32,6 +33,8 @@ grep -q "APP_NAME: RwLock<String> = RwLock::new(\"${NAME}\"" "$CFG"    || { echo
 # Serveur « maison » compilé : sans lui, RustDesk se croit sur le serveur public (message
 # « mettez en place votre propre serveur », qualité/FPS bridés en relais : client.rs, dialog.dart)
 grep -q "PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new(\"${SERVER}\"" "$CFG" || { echo "ÉCHEC : PROD_RENDEZVOUS_SERVER non modifié" >&2; exit 1; }
+# Réglages intégrés : masque l'écran « Serveur ID/relais » (personne ne peut changer de serveur)
+grep -q 'BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = RwLock::new(HashMap::from(\[("hide-server-settings"' "$CFG" || { echo "ÉCHEC : BUILTIN_SETTINGS non modifié" >&2; exit 1; }
 if grep -q "rs-ny.rustdesk.com" "$CFG"; then echo "ÉCHEC : serveur public RustDesk encore présent" >&2; exit 1; fi
 
 echo "OK : client « ${NAME} » configuré pour ${SERVER}"

@@ -58,6 +58,17 @@ sed -i.bak \
 rm -f "$UI.bak"
 grep -q "BG_COLOR: \[u8; 3\] = \[12, 32, 25\]" "$UI" || { echo "ÉCHEC : BG_COLOR non modifié dans $UI" >&2; exit 1; }
 
+# Modifications de l'interface (pharma/patches/*.patch), appliquées dans l'ordre
+for p in pharma/patches/*.patch; do
+  [ -e "$p" ] || continue
+  if git apply --reverse --check "$p" 2>/dev/null; then
+    echo "  patch déjà appliqué : $p"
+  else
+    git apply "$p" || { echo "ÉCHEC : patch $p (code amont modifié ?)" >&2; exit 1; }
+    echo "  patch appliqué : $p"
+  fi
+done
+
 # Propriétés des fichiers (Propriétés → Détails) : exe principal, librustdesk.dll, exe portable
 python3 pharma/set-file-metadata.py
 
