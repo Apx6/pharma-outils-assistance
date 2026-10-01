@@ -14,8 +14,10 @@ MAP=(
   # Zone de notification
   "tray-icon.ico       res/tray-icon.ico"
   # Interface Flutter : icône, logo de l'écran d'accueil (clair/sombre),
-  # icône des raccourcis et du panneau « Programmes » (client personnalisé)
-  "icon-256.png        flutter/assets/icon.png"
+  # icône des raccourcis et du panneau « Programmes » (client personnalisé).
+  # PAS de flutter/assets/icon.png : tray.rs le prendrait pour l'icône de la barre des menus
+  # macOS (rendue en « template » : carré vide) et de la zone de notification Windows.
+  # Sans lui, l'interface utilise icon.svg et les icônes système res/*tray*.
   "icon.svg            flutter/assets/icon.svg"
   "icon.ico            flutter/assets/icon.ico"
   "logo_light.png      flutter/assets/logo_light.png"

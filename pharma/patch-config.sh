@@ -21,6 +21,7 @@ sed -i.bak \
   -e "s|^pub const RENDEZVOUS_SERVERS: &\[&str\] = &\[.*\];|pub const RENDEZVOUS_SERVERS: \&[\&str] = \&[\"${SERVER}\"];|" \
   -e "s|^pub const RS_PUB_KEY: &str = \".*\";|pub const RS_PUB_KEY: \&str = \"${KEY}\";|" \
   -e "s|\(pub static ref APP_NAME: RwLock<String> = RwLock::new(\)\"RustDesk\"|\1\"${NAME}\"|" \
+  -e "s|\(pub static ref PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new(\)\"[^\"]*\"|\1\"${SERVER}\"|" \
   "$CFG"
 rm -f "$CFG.bak"
 
@@ -28,6 +29,9 @@ rm -f "$CFG.bak"
 grep -q "RENDEZVOUS_SERVERS: &\[&str\] = &\[\"${SERVER}\"\];" "$CFG" || { echo "ÉCHEC : RENDEZVOUS_SERVERS non modifié" >&2; exit 1; }
 grep -q "RS_PUB_KEY: &str = \"${KEY}\";" "$CFG"                       || { echo "ÉCHEC : RS_PUB_KEY non modifié" >&2; exit 1; }
 grep -q "APP_NAME: RwLock<String> = RwLock::new(\"${NAME}\"" "$CFG"    || { echo "ÉCHEC : APP_NAME non modifié" >&2; exit 1; }
+# Serveur « maison » compilé : sans lui, RustDesk se croit sur le serveur public (message
+# « mettez en place votre propre serveur », qualité/FPS bridés en relais : client.rs, dialog.dart)
+grep -q "PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new(\"${SERVER}\"" "$CFG" || { echo "ÉCHEC : PROD_RENDEZVOUS_SERVER non modifié" >&2; exit 1; }
 if grep -q "rs-ny.rustdesk.com" "$CFG"; then echo "ÉCHEC : serveur public RustDesk encore présent" >&2; exit 1; fi
 
 echo "OK : client « ${NAME} » configuré pour ${SERVER}"
