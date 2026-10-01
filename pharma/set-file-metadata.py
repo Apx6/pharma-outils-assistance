@@ -15,6 +15,10 @@ import re
 import sys
 from pathlib import Path
 
+# La console Windows des runners GitHub est en cp1252 : forcer l'UTF-8 pour les messages.
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+
 APP_NAME = os.environ.get("APP_NAME", "PharmaOutils")
 COMPANY = os.environ.get("COMPANY_NAME", "Holding Dioux")
 PRODUCT = os.environ.get("PRODUCT_NAME", "Pharma-Outils Assistance")
