@@ -54,7 +54,10 @@ cmd_keychain() {
 
 sign() {
   if [ "$ID" = "-" ]; then
-    codesign --force --options runtime -s - "$@"
+    # Pas de hardened runtime en ad hoc : sa « library validation » exige un Team ID commun
+    # à l'app et à ses bibliothèques, ce qu'une signature ad hoc n'a pas (FlutterMacOS refusé
+    # au lancement : « different Team IDs »). Le hardened runtime ne sert qu'à la notarisation.
+    codesign --force -s - "$@"
   else
     codesign --force --options runtime --timestamp --keychain "$KEYCHAIN" -s "$ID" "$@"
   fi
