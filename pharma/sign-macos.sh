@@ -3,6 +3,8 @@
 #
 #   sign-macos.sh keychain            # importe le certificat dans un trousseau temporaire
 #   sign-macos.sh app <App.app>       # signe le bundle (de l'intérieur vers l'extérieur)
+#   sign-macos.sh adhoc <App.app>     # sans certificat : re-signe ad hoc (répare le sceau du bundle,
+#                                     # cassé par build.py qui ajoute « service » après Xcode)
 #   sign-macos.sh dmg <fichier.dmg>   # signe, notarise et agrafe (staple) le .dmg
 #   sign-macos.sh cleanup             # supprime trousseau et clés temporaires
 #
@@ -50,12 +52,18 @@ cmd_keychain() {
   echo "Identité : $(identity)"
 }
 
-sign() { codesign --force --options runtime --timestamp --keychain "$KEYCHAIN" -s "$ID" "$@"; }
+sign() {
+  if [ "$ID" = "-" ]; then
+    codesign --force --options runtime -s - "$@"
+  else
+    codesign --force --options runtime --timestamp --keychain "$KEYCHAIN" -s "$ID" "$@"
+  fi
+}
 
 cmd_app() {
   local APP="${1:?chemin de l.app}"
   [ -d "$APP" ] || die "$APP introuvable"
-  ID=$(identity)
+  ID="${ID:-$(identity)}"
 
   # 1. Bibliothèques et exécutables isolés dans Frameworks (liblibrustdesk.dylib…)
   find "$APP/Contents/Frameworks" -maxdepth 1 -type f \( -name "*.dylib" -o -perm -u+x \) -print0 |
@@ -109,6 +117,7 @@ cmd_cleanup() {
 case "${1:-}" in
   keychain) cmd_keychain ;;
   app) shift; cmd_app "$@" ;;
+  adhoc) shift; ID="-"; cmd_app "$@" ;;
   dmg) shift; cmd_dmg "$@" ;;
   cleanup) cmd_cleanup ;;
   *) sed -n '2,13p' "$0"; exit 1 ;;

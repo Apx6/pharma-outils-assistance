@@ -431,6 +431,13 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Contents/Info.plist"
           codesign -dv "$APP" 2>&1 | head -5
 
+      # build.py copie le binaire « service » dans le bundle APRÈS la signature de Xcode :
+      # le sceau est alors invalide (« a sealed resource is missing or invalid »), ce qui
+      # empêche macOS de mémoriser les autorisations. Sans certificat, on re-signe ad hoc.
+      - name: Re-signer ad hoc (sans certificat Apple)
+        if: env.MAC_SIGNING != 'true'
+        run: bash pharma/sign-macos.sh adhoc "./flutter/build/macos/Build/Products/Release/${APP_NAME}.app"
+
       - name: Préparer la signature Apple
         if: env.MAC_SIGNING == 'true'
         env:
